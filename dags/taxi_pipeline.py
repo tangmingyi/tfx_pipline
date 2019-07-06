@@ -32,15 +32,15 @@ from tfx.components.transform.component import Transform # Step 4
 
 from tfx.orchestration import pipeline
 
-# from tfx.proto import trainer_pb2 # Step 5
-# from tfx.components.trainer.component import Trainer # Step 5
+from tfx.proto import trainer_pb2 # Step 5
+from tfx.components.trainer.component import Trainer # Step 5
 
-# from tfx.proto import evaluator_pb2 # Step 6
-# from tfx.components.evaluator.component import Evaluator # Step 6
+from tfx.proto import evaluator_pb2 # Step 6
+from tfx.components.evaluator.component import Evaluator # Step 6
 
-# from tfx.proto import pusher_pb2 # Step 7
-# from tfx.components.model_validator.component import ModelValidator # Step 7
-# from tfx.components.pusher.component import Pusher # Step 7
+from tfx.proto import pusher_pb2 # Step 7
+from tfx.components.model_validator.component import ModelValidator # Step 7
+from tfx.components.pusher.component import Pusher # Step 7
 
 from tfx.orchestration.airflow.airflow_runner import AirflowDAGRunner
 from tfx.utils.dsl_utils import csv_input
@@ -105,36 +105,36 @@ def _create_pipeline():
       module_file=_taxi_module_file) # Step 4
 
   # Uses user-provided Python function that implements a model using TF-Learn.
-  # trainer = Trainer( # Step 5
-  #     module_file=_taxi_module_file, # Step 5
-  #     transformed_examples=transform.outputs.transformed_examples, # Step 5
-  #     schema=infer_schema.outputs.output, # Step 5
-  #     transform_output=transform.outputs.transform_output, # Step 5
-  #     train_args=trainer_pb2.TrainArgs(num_steps=10000), # Step 5
-  #     eval_args=trainer_pb2.EvalArgs(num_steps=5000)) # Step 5
+  trainer = Trainer( # Step 5
+      module_file=_taxi_module_file, # Step 5
+      transformed_examples=transform.outputs.transformed_examples, # Step 5
+      schema=infer_schema.outputs.output, # Step 5
+      transform_output=transform.outputs.transform_output, # Step 5
+      train_args=trainer_pb2.TrainArgs(num_steps=10000), # Step 5
+      eval_args=trainer_pb2.EvalArgs(num_steps=5000)) # Step 5
 
   # Uses TFMA to compute a evaluation statistics over features of a model.
-  # model_analyzer = Evaluator( # Step 6
-  #     examples=example_gen.outputs.examples, # Step 6
-  #     model_exports=trainer.outputs.output, # Step 6
-  #     feature_slicing_spec=evaluator_pb2.FeatureSlicingSpec(specs=[ # Step 6
-  #         evaluator_pb2.SingleSlicingSpec( # Step 6
-  #             column_for_slicing=['trip_start_hour']) # Step 6
-  #     ])) # Step 6
+  model_analyzer = Evaluator( # Step 6
+      examples=example_gen.outputs.examples, # Step 6
+      model_exports=trainer.outputs.output, # Step 6
+      feature_slicing_spec=evaluator_pb2.FeatureSlicingSpec(specs=[ # Step 6
+          evaluator_pb2.SingleSlicingSpec( # Step 6
+              column_for_slicing=['trip_start_hour']) # Step 6
+      ])) # Step 6
 
   # Performs quality validation of a candidate model (compared to a baseline).
-  # model_validator = ModelValidator( # Step 7
-  #     examples=example_gen.outputs.examples, # Step 7
-  #              model=trainer.outputs.output) # Step 7
+  model_validator = ModelValidator( # Step 7
+      examples=example_gen.outputs.examples, # Step 7
+               model=trainer.outputs.output) # Step 7
 
   # Checks whether the model passed the validation steps and pushes the model
   # to a file destination if check passed.
-  # pusher = Pusher( # Step 7
-  #     model_export=trainer.outputs.output, # Step 7
-  #     model_blessing=model_validator.outputs.blessing, # Step 7
-  #     push_destination=pusher_pb2.PushDestination( # Step 7
-  #         filesystem=pusher_pb2.PushDestination.Filesystem( # Step 7
-  #             base_directory=_serving_model_dir))) # Step 7
+  pusher = Pusher( # Step 7
+      model_export=trainer.outputs.output, # Step 7
+      model_blessing=model_validator.outputs.blessing, # Step 7
+      push_destination=pusher_pb2.PushDestination( # Step 7
+          filesystem=pusher_pb2.PushDestination.Filesystem( # Step 7
+              base_directory=_serving_model_dir))) # Step 7
 
   return pipeline.Pipeline(
       pipeline_name='taxi',
@@ -143,7 +143,7 @@ def _create_pipeline():
           example_gen,
           statistics_gen, infer_schema, validate_stats, # Step 3
           transform, # Step 4
-          # trainer, # Step 5
+          trainer, # Step 5
           # model_analyzer, # Step 6
           # model_validator, pusher # Step 7
       ],
